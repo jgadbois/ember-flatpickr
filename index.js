@@ -1,5 +1,4 @@
 /* eslint-disable */
-'use strict';
 
 module.exports = {
   name: 'ember-flatpickr',
