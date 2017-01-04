@@ -5,7 +5,7 @@ module.exports = {
   name: 'ember-flatpickr',
   included: function(app) {
     if (app.options && app.options.flatpickr && app.options.flatpickr.theme) {
-      this.theme = `themes/${app.options.flatpickr.theme}.css`;
+      this.theme = 'themes/' + app.options.flatpickr.theme + '.css';
     }
 
     this.locales = [];
@@ -18,7 +18,7 @@ module.exports = {
   options: {
     nodeAssets: {
       flatpickr: function() {
-        const localePaths = this.locales.map(locale => `l10n/${locale}.js`)
+        const localePaths = this.locales.map(locale => 'l10n/' + locale + '.js')
 
         return {
           enabled: !process.env.EMBER_CLI_FASTBOOT,
