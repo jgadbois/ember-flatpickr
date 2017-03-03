@@ -177,3 +177,53 @@ test('onChange with action mut helper triggers value change only once', function
   });
 
 });
+
+test('onChange gets called with the correct parameters', function(assert) {
+  let originalPosition = '1';
+  let originalDate = '2080-12-01T20:00:00.000Z';
+  let newPosition = '5';
+  let dateFormat = 'Y-Y-m-d';
+  let newFormattedDate = '2080-2080-12-05';
+
+  this.on('onChange', (selectedDates, dateStr, instance) => {
+    assert.ok(selectedDates instanceof Array, 'selectedDates is an array');
+    assert.equal(selectedDates.length, 1, 'selectedDates contains a single entry');
+
+    assert.ok(selectedDates[0] instanceof Date, 'selectedDates contains DateObjects');
+
+    assert.equal(selectedDates[0].toDateString(), new Date('2080-12-05').toDateString(), 'selectedDates contains the correct Date');
+
+    assert.equal(dateStr, newFormattedDate, 'dateStr is formatted correctly');
+
+    assert.ok(instance instanceof Flatpickr, 'instance is a Flatpickr object');
+  });
+
+  this.set('dateValue', originalDate);
+  this.set('dateFormat', dateFormat);
+
+  this.render(
+    hbs`{{ember-flatpickr
+      onChange="onChange"
+      placeholder="Pick date"
+      value=(readonly dateValue)
+      dateFormat=dateFormat
+      }}`);
+
+  run(() => {
+    assert.equal($('.flatpickr-days .flatpickr-day.selected').text(), originalPosition, 'initial selected date text');
+
+    $('.flatpickr-input')[0].dispatchEvent(new Event('focus'));
+    $('.flatpickr-days .flatpickr-day').get(newPosition - 1).click();
+
+    assert.equal($('.flatpickr-days .flatpickr-day.selected').text(), newPosition, 'selected changes with dateValue');
+
+    $('.flatpickr-input')[0]._flatpickr.set('dateFormat', 'Y-m-d');
+    newFormattedDate = '2080-12-05';
+
+    $('.flatpickr-input')[0].dispatchEvent(new Event('focus'));
+    $('.flatpickr-days .flatpickr-day').get(newPosition - 1).click();
+
+    assert.equal($('.flatpickr-days .flatpickr-day.selected').text(), newPosition, 'selected changes with dateValue');
+  });
+
+});
