@@ -151,7 +151,7 @@ export default TextField.extend({
     let ref = this.get('flatpickrRef');
 
     if (ref) {
-      this.get('flatpickrRef').setDate(value);
+      this.get('flatpickrRef').setDate(value, false);
     }
   },
   willDestroyElement() {

@@ -144,3 +144,36 @@ test('locale works correctly', function(assert) {
 
   assert.equal($('.flatpickr-current-month .cur-month').text().trim(), 'Décembre', 'French locale applied successfully');
 });
+
+test('onChange with action mut helper triggers value change only once', function(assert) {
+  assert.expect(3);
+
+  let originalPosition = '1';
+  let originalDate = '2080-12-01T20:00:00.000Z';
+  let newPosition = '5';
+
+  this.on('onChange', (selectedDates) => {
+    assert.ok(selectedDates[0].toISOString(), 'onChange action was executed');
+
+    this.set('dateValue', selectedDates[0]);
+  });
+
+  this.set('dateValue', originalDate);
+
+  this.render(
+    hbs`{{ember-flatpickr
+      onChange="onChange"
+      placeholder="Pick date"
+      value=(readonly dateValue)
+      }}`);
+
+  run(() => {
+    assert.equal($('.flatpickr-days .flatpickr-day.selected').text(), originalPosition, 'initial selected date text');
+
+    $('.flatpickr-input')[0].dispatchEvent(new Event('focus'));
+    $('.flatpickr-days .flatpickr-day').get(newPosition - 1).click();
+
+    assert.equal($('.flatpickr-days .flatpickr-day.selected').text(), newPosition, 'selected changes with dateValue');
+  });
+
+});
