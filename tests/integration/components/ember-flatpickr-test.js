@@ -145,7 +145,7 @@ test('locale works correctly', function(assert) {
   assert.equal($('.flatpickr-current-month .cur-month').text().trim(), 'Décembre', 'French locale applied successfully');
 });
 
-test('onChange with action mut helper triggers value change only once', function(assert) {
+test('onChange triggers value change only once', function(assert) {
   assert.expect(3);
 
   let originalPosition = '1';
