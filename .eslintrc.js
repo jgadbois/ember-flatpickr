@@ -1,19 +1,23 @@
 module.exports = {
   root: true,
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 2017,
     sourceType: 'module'
   },
   extends: [
-    'eslint:recommended',
-    'plugin:ember-suave/recommended'
+    'eslint:recommended'
   ],
   env: {
-    'browser': true
+    browser: true
   },
+  plugins: [
+    'ember'
+  ],
   globals: {
-    Flatpickr: false
+    flatpickr: false
   },
   rules: {
+    'no-console': 0,
+    'ember/no-old-shims': 'error'
   }
 };

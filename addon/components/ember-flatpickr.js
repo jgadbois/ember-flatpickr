@@ -1,51 +1,97 @@
-import Ember from 'ember';
-const { assert, assign, observer, on, run, TextField } = Ember;
+/* eslint-disable  ship-shape/avoid-leaking-state-in-components, ship-shape/closure-actions, ship-shape/no-observers, ship-shape/no-on-calls-in-components */
+import { assert } from '@ember/debug';
+import { assign } from '@ember/polyfills';
+import Component from '@ember/component';
+import diffAttrs from 'ember-diff-attrs';
+import { on } from '@ember/object/evented';
+import { run } from '@ember/runloop';
 
-export default TextField.extend({
-  attributeBindings: ['placeholder', 'value'],
-  // Flatpickr options
-  allowInput: false,
-  altFormat: 'F j, Y',
-  altInput: false,
-  altInputClass: '',
-  clickOpens: true,
-  dateFormat: 'Y-m-d',
-  defaultDate: null,
-  disable: [],
-  disableMobile: false,
-  enable: [],
-  enableSeconds: false,
-  enableTime: false,
+export default Component.extend({
+  tagName: 'input',
+  type: 'text',
+  attributeBindings: ['placeholder', 'type'],
+  date: null,
   flatpickrRef: null,
-  hourIncrement: 1,
-  inline: false,
-  locale: 'default',
-  maxDate: null,
-  minDate: null,
-  minuteIncrement: 5,
-  mode: 'single',
-  nextArrow: '>',
-  noCalendar: false,
-  parseDate: false,
-  prevArrow: '<',
-  shorthandCurrentMonth: false,
-  static: false,
-  timeFormat: 'H:i',
-  time_24hr: false, // eslint-disable-line camelcase
-  utc: false,
-  value: null,
-  weekNumbers: false,
-  wrap: false,
-  localeUpdated: observer('locale', function() {
-    this.get('flatpickrRef').destroy();
-    this.setupComponent();
+
+  setupComponent: on('init', function() {
+    // Require that users pass a date
+    assert('{{ember-flatpickr}} requires a `date` to be passed as the value for flatpickr.', this.get('date') !== undefined);
+
+    // Require that users pass an onChange
+    assert('{{ember-flatpickr}} requires an `onChange` action or null for no action.', this.get('onChange') !== undefined);
+
+    // Pass all values and setup flatpickr
+    run.scheduleOnce('afterRender', this, function() {
+      const options = this.getProperties(Object.keys(this.attrs));
+
+      // Add defaultDate, change and close handlers
+      assign(options, {
+        defaultDate: this.get('date'),
+        onChange: this._onChange.bind(this),
+        onClose: this._onClose.bind(this),
+        onOpen: this._onOpen.bind(this),
+        onReady: this._onReady.bind(this)
+      });
+
+      const flatpickrRef = flatpickr(this.element, options);
+
+      if (this.get('appendDataInput')) {
+        this.element.setAttribute('data-input', '');
+      }
+
+      this._setDisabled(this.get('disabled'));
+
+      this.set('flatpickrRef', flatpickrRef);
+    });
   }),
-  maxDateUpdated: observer('maxDate', function() {
-    this.get('flatpickrRef').set('maxDate', this.get('maxDate'));
+
+  didReceiveAttrs: diffAttrs('date', 'disabled', 'locale', 'maxDate', 'minDate', function(changedAttrs, ...args) {
+    this._super(...args);
+
+    if (changedAttrs && changedAttrs.date) {
+      const [oldDate, newDate] = changedAttrs.date;
+      if (typeof newDate !== 'undefined' && oldDate !== newDate) {
+        this.element._flatpickr.setDate(newDate);
+      }
+    }
+
+    if (changedAttrs && changedAttrs.disabled) {
+      const [oldDisabled, newDisabled] = changedAttrs.disabled;
+      if (typeof newDisabled !== 'undefined' && oldDisabled !== newDisabled) {
+        this._setDisabled(newDisabled);
+      }
+    }
+
+    if (changedAttrs && changedAttrs.locale) {
+      const [oldLocale, newLocale] = changedAttrs.locale;
+
+      if (oldLocale !== newLocale) {
+        this.element._flatpickr.destroy();
+        this.setupComponent();
+      }
+    }
+
+    if (changedAttrs && changedAttrs.maxDate) {
+      const [oldMaxDate, newMaxDate] = changedAttrs.maxDate;
+
+      if (oldMaxDate !== newMaxDate) {
+        this.element._flatpickr.set('maxDate', newMaxDate);
+      }
+    }
+
+    if (changedAttrs && changedAttrs.minDate) {
+      const [oldMinDate, newMinDate] = changedAttrs.minDate;
+
+      if (oldMinDate !== newMinDate) {
+        this.element._flatpickr.set('minDate', newMinDate);
+      }
+    }
   }),
-  minDateUpdated: observer('minDate', function() {
-    this.get('flatpickrRef').set('minDate', this.get('minDate'));
-  }),
+
+  willDestroyElement() {
+    this.element._flatpickr.destroy();
+  },
+
   /**
    * When the date is changed, update the value and send 'onChange' action
    * @param selectedDates The array of selected dates
@@ -54,10 +100,9 @@ export default TextField.extend({
    * @private
    */
   _onChange(selectedDates, dateStr, instance) {
-    if (selectedDates && selectedDates.length > 0) {
-      this.sendAction('onChange', selectedDates, dateStr, instance);
-    }
+    this.sendAction('onChange', selectedDates, dateStr, instance);
   },
+
   /**
    * When the flatpickr is closed, fire the 'onClose' action
    * @param selectedDates The array of selected dates
@@ -68,6 +113,7 @@ export default TextField.extend({
   _onClose(selectedDates, dateStr, instance) {
     this.sendAction('onClose', selectedDates, dateStr, instance);
   },
+
   /**
    * When the flatpickr is opened, fire the 'onOpen' action
    * @param selectedDates The array of selected dates
@@ -78,6 +124,7 @@ export default TextField.extend({
   _onOpen(selectedDates, dateStr, instance) {
     this.sendAction('onOpen', selectedDates, dateStr, instance);
   },
+
   /**
    * When the flatpickr is ready, fire the 'onReady' action
    * @param selectedDates The array of selected dates
@@ -88,73 +135,17 @@ export default TextField.extend({
   _onReady(selectedDates, dateStr, instance) {
     this.sendAction('onReady', selectedDates, dateStr, instance);
   },
-  setupComponent: on('init', function() {
-    // Require that users pass an onChange now
-    assert('{{ember-flatpickr}} requires an `onChange` action or null for no action.', this.get('onChange') !== undefined);
 
-    // Pass all values and setup flatpickr
-    run.scheduleOnce('afterRender', this, function() {
-      let options = this.getProperties([
-        'allowInput',
-        'altFormat',
-        'altInput',
-        'altInputClass',
-        'clickOpens',
-        'dateFormat',
-        'defaultDate',
-        'disable',
-        'disableMobile',
-        'enable',
-        'enableSeconds',
-        'enableTime',
-        'hourIncrement',
-        'inline',
-        'locale',
-        'maxDate',
-        'minDate',
-        'minuteIncrement',
-        'mode',
-        'nextArrow',
-        'noCalendar',
-        'parseDate',
-        'prevArrow',
-        'shorthandCurrentMonth',
-        'static',
-        'timeFormat',
-        'time_24hr',
-        'utc',
-        'value',
-        'weekNumbers',
-        'wrap'
-      ]);
-
-      // Add change and close handlers
-      assign(options, {
-        onChange: this._onChange.bind(this),
-        onClose: this._onClose.bind(this),
-        onOpen: this._onOpen.bind(this),
-        onReady: this._onReady.bind(this)
-      });
-
-      let flatpickrRef = new Flatpickr(this.element, options);
-
-      if (this.get('appendDataInput')) {
-        this.$().attr('data-input', '');
-      }
-      this.set('flatpickrRef', flatpickrRef);
-    });
-  }),
-  didReceiveAttrs() {
-    this._super(...arguments);
-
-    let value = this.get('value');
-    let ref = this.get('flatpickrRef');
-
-    if (ref) {
-      this.get('flatpickrRef').setDate(value, false);
+  /**
+   * Set disabled for the correct input, handling altInput weirdness
+   * @param {boolean} disabled Disabled or not
+   * @private
+   */
+  _setDisabled(disabled) {
+    if (this.get('altInput')) {
+      this.element.nextSibling.disabled = disabled;
+    } else {
+      this.element.disabled = disabled;
     }
-  },
-  willDestroyElement() {
-    this.get('flatpickrRef').destroy();
   }
 });

@@ -1,5 +1,5 @@
-import Ember from 'ember';
-const { Controller, Logger } = Ember;
+import Controller from '@ember/controller';
+import { run } from '@ember/runloop';
 
 export default Controller.extend({
   dateValue: null,
@@ -7,21 +7,45 @@ export default Controller.extend({
   locale: null,
   locales: ['default', 'fr', 'de', 'ru', 'uk'],
   minDate: null,
+  timeValue: null,
   actions: {
-    onChange(dateObject, dateString) {
-      this.set('dateValue', dateString);
-      Logger.log('You selected: ', dateObject);
+    clearDate() {
+      this.set('dateValue', null);
+    },
+    clearTime() {
+      this.set('timeValue', null);
+    },
+    onChange(selectedDates) {
+      run.next(() => {
+        this.set('dateValue', selectedDates[0]);
+        console.log('You selected: ', selectedDates[0]);
+      });
+    },
+    onChangeTime(selectedDates) {
+      run.next(() => {
+        this.set('timeValue', selectedDates[0]);
+        console.log('You selected: ', selectedDates[0]);
+      });
     },
     onClose() {
-      Logger.log('Flatpickr closed');
+      console.log('Flatpickr closed');
+    },
+    onCloseTime() {
+      console.log('Time Flatpickr closed');
     },
     onReady() {
       this.set('dateValue', null);
-      Logger.log('onReady called');
+      console.log('onReady called');
+    },
+    onReadyTime() {
+      this.set('timeValue', null);
+      console.log('onReadyTime called');
     },
     updateMin() {
-      this.set('dateValue', null);
-      this.set('minDate', '2080-12-24T16:16:22.585Z');
+      run.next(() => {
+        this.set('dateValue', null);
+        this.set('minDate', '2080-12-24T16:16:22.585Z');
+      });
     }
   }
 });

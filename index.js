@@ -1,9 +1,32 @@
-/* eslint-disable */
+/* eslint-env node */
 'use strict';
+
+const fastbootTransform = require('fastboot-transform');
 
 module.exports = {
   name: 'ember-flatpickr',
-  included: function(app) {
+  options: {
+    nodeAssets: {
+      flatpickr() {
+        const localePaths = this.locales.map(locale => `l10n/${locale}.js`);
+
+        return {
+          srcDir: 'dist',
+          import: {
+            include: [
+              'flatpickr.js',
+              this.theme || 'flatpickr.css'
+            ].concat(localePaths),
+            processTree(tree) {
+              return fastbootTransform(tree);
+            }
+          }
+        };
+      }
+    }
+  },
+
+  included(app) {
     if (app.options && app.options.flatpickr && app.options.flatpickr.theme) {
       this.theme = `themes/${app.options.flatpickr.theme}.css`;
     }
@@ -14,22 +37,5 @@ module.exports = {
     }
 
     this._super.included.apply(this, arguments);
-  },
-  options: {
-    nodeAssets: {
-      flatpickr: function() {
-        const localePaths = this.locales.map(locale => `l10n/${locale}.js`)
-
-        return {
-          enabled: !process.env.EMBER_CLI_FASTBOOT,
-          srcDir: 'dist',
-          import: [
-            'flatpickr.js',
-            this.theme || 'flatpickr.css',
-            ...localePaths
-          ]
-        };
-      }
-    }
   }
 };

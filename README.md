@@ -1,6 +1,8 @@
 # Ember-flatpickr
 
-<a href="https://shipshape.io/"><img src="http://i.imgur.com/bU4ABmk.png" width="100" height="100"/></a>
+<a href="https://shipshape.io/"><img src="http://i.imgur.com/KVqNjgO.png" alt="Ship Shape" width="100" height="100"/></a>
+
+**[ember-flatpickr is built and maintained by Ship Shape. Contact us for Ember.js consulting, development, and training for your project](https://shipshape.io/ember-consulting)**.
 
 [![npm version](https://badge.fury.io/js/ember-flatpickr.svg)](http://badge.fury.io/js/ember-flatpickr)
 [![npm](https://img.shields.io/npm/dm/ember-flatpickr.svg)]()
@@ -8,6 +10,8 @@
 [![Build Status](https://travis-ci.org/shipshapecode/ember-flatpickr.svg?branch=master)](https://travis-ci.org/shipshapecode/ember-flatpickr)
 [![Code Climate](https://codeclimate.com/github/shipshapecode/ember-flatpickr/badges/gpa.svg)](https://codeclimate.com/github/shipshapecode/ember-flatpickr)
 [![Test Coverage](https://codeclimate.com/github/shipshapecode/ember-flatpickr/badges/coverage.svg)](https://codeclimate.com/github/shipshapecode/ember-flatpickr/coverage)
+
+<a href="https://app.codesponsor.io/link/bnfiyuC9jfaRVvE6NRbanWqE/shipshapecode/ember-flatpickr" rel="nofollow"><img src="https://app.codesponsor.io/embed/bnfiyuC9jfaRVvE6NRbanWqE/shipshapecode/ember-flatpickr.svg" style="width: 888px; height: 68px;" alt="Sponsor" /></a>
 
 This is an Ember addon that wraps the date picker [flatpickr](http://chmln.github.io/flatpickr/). It uses ember-cli-node-assets to pull in flatpickr from npm.
 
@@ -24,48 +28,13 @@ http://shipshapecode.github.io/ember-flatpickr/
 
 ```handlebars
 {{ember-flatpickr
-allowInput=false
-altFormat='Y-m-d'
-altInput=true
-altInputClass='my-alt-input'
-clickOpens=true
-dateFormat='M/D/Y'
-defaultDate=defaultDate
-disable=datesToDisable
-disableMobile=false
-enable=datesToEnable
-enableSeconds=false
-enableTime=true
-flatpickrRef=flatpickrRef
-hourIncrement=1
-inline=false
-locale='ru'
-maxDate=maxDate
-minDate=minDate
-minuteIncrement=5
-mode='single'
-nextArrow='>'
-noCalendar=false
-onChange=(action (mut dateValues))
-onClose='doSomeStuffOnClose'
-onOpen='doSomeStuffOnOpen'
-onReady='doSomeStuffOnReady'
-parseDate=false
-placeholder='Choose a Date'
-prevArrow='<'
-static=false
-timeFormat='H:i'
-time_24hr=false
-utc=false
-value=(readonly dateValues)
-wrap=false}}
 ```
 
-*(`onChange` is the only required option, but you can pass null if you do not care about it. All other options are displayed, but they have defaults and you only need to pass what you need)
+*(`date` and `onChange` are the only required options, but you can pass null if you do not care about it. All other options are taken straight from the flatpickr options, but they have defaults and you only need to pass what you need.)
 
-**Note:** You should pass your value with the `readonly` helper, and you should only update your value selected in the `onChange` action. 
+**Note:** You should pass your `date` with the `readonly` helper, and you should only update your `date` selected in the `onChange` action. 
 
-Value property accepts:
+`date` property accepts:
   * A single `dateObject`
   * A single `string` containing a date formatted accordingly to `dateFormat`
   * An array of `dateObject`
@@ -153,9 +122,9 @@ onChange=(action (mut dateValue))
 
 Check [flatpickr locale documentation](https://chmln.github.io/flatpickr/#locale) for a list of config options.
 
-## Observers
+## Updating Attributes
 
-`maxDate` and `minDate` are watched by observers, and will update the flatpickr instance whenever you change them. This allows you to do things like having two components, used as a range picker, and updating the `minDate` and `maxDate` to display valid date choices on each.
+`date`, `locale`, `maxDate` and `minDate` are watched by the component, and will update the flatpickr instance whenever you change them. This allows you to do things like having two components, used as a range picker, and updating the `minDate` and `maxDate` to display valid date choices on each.
 
 ## flatpickrRef
 
